@@ -1,13 +1,14 @@
 package main
 
 import (
-	"io"
+	"fmt"
 	"net/http"
 	"os"
 )
 
 func hello(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Hello World")
+	//io.WriteString(w, "Hello World")
+	fmt.Fprint(w, "Hello Person!")
 }
 
 func main() {
