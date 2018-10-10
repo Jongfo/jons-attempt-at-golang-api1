@@ -53,4 +53,5 @@ func main() { /*
 	r.HandleFunc("/", handl404)
 	r.HandleFunc("/igcinfo/api", handlAPI)
 	http.Handle("/", r)
+	http.ListenAndServe(":", nil)
 }
