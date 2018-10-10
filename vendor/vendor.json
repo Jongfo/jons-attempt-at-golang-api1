@@ -34,6 +34,12 @@
 			"revisionTime": "2018-10-08T08:51:00Z"
 		},
 		{
+			"checksumSHA1": "Ld1fkCBbtUqRg3qu1gZKpP2OyO4=",
+			"path": "github.com/gorilla/mux",
+			"revision": "9e1f5955c0d22b55d9e20d6faa28589f83b2faca",
+			"revisionTime": "2018-09-03T15:43:05Z"
+		},
+		{
 			"checksumSHA1": "pHOBAFXNfJ1FX5JwsjcbQ8Rg5Bc=",
 			"path": "github.com/marni/goigc",
 			"revision": "71f274dd21ef320ccbb6c6271c7df7fd8a908779",
