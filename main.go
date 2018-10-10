@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	igc "github.com/marni/goigc"
@@ -48,10 +49,10 @@ func main() { /*
 		http.HandleFunc("/", mariusz)
 		http.HandleFunc("/hello", hello)
 		http.ListenAndServe(":"+port, nil)*/
-
+	port := os.Getenv("PORT")
 	r := mux.NewRouter()
 	r.HandleFunc("/", handl404)
 	r.HandleFunc("/igcinfo/api", handlAPI)
 	http.Handle("/", r)
-	http.ListenAndServe(":", nil)
+	http.ListenAndServe(":"+port, nil)
 }
