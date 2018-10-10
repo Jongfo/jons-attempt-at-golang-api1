@@ -29,6 +29,7 @@ func mariusz(w http.ResponseWriter, r *http.Request) {
 func main() {
 	port := os.Getenv("PORT")
 	http.HandleFunc("/", mariusz)
+	http.HandleFunc("/hello", hello)
 	http.ListenAndServe(":"+port, nil)
 
 }
