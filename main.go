@@ -6,7 +6,7 @@ import (
 	"github.com/marni/goigc"
 )
 
-func main() {
+func main() { /*
 	s := "http://skypolaris.org/wp-content/uploads/IGS%20Files/Madrid%20to%20Jerez.igc"
 	track, err := igc.ParseLocation(s)
 	if err != nil {
@@ -14,5 +14,6 @@ func main() {
 	}
 
 	fmt.Printf("Pilot: %s, gliderType: %s, date: %s",
-		track.Pilot, track.GliderType, track.Date.String())
+		track.Pilot, track.GliderType, track.Date.String())*/
+	fmt.Println("Hello world!")
 }
