@@ -13,7 +13,7 @@ import (
 )
 
 var startTime time.Time
-var registeredTrackIDs []string
+var registeredTrackIDs []string //a little bit of duplicate data.
 var registeredTracks []igc.Track
 
 //Service contains data about our service
@@ -62,12 +62,12 @@ func handl404(w http.ResponseWriter, r *http.Request) {
 func handlAPI(w http.ResponseWriter, r *http.Request) {
 	t := uptime()
 	ti := fmt.Sprintf("P%dY%dM%dDT%dH%dM%dS",
-		int(t.Seconds()/31556926),
-		int(t.Seconds()/2629743),
-		int(t.Seconds()/86400),
-		int(t.Seconds()/3600),
-		int(t.Seconds()/60),
-		int(t.Seconds()))
+		int(t.Seconds()/31556926),   //year
+		int(t.Seconds()/2629743)%12, //month
+		int(t.Seconds()/86400)%30,   //day
+		int(t.Seconds()/3600)%24,    //hour
+		int(t.Seconds()/60)%60,      //min
+		int(t.Seconds())%60)         //sec
 
 	serv := Service{ti, "Service for IGC tracks.", "v1"}
 	js, err := json.Marshal(serv)
@@ -86,6 +86,10 @@ func handlAPIigc(w http.ResponseWriter, r *http.Request) {
 		//TODO:	Task 3
 		//w.WriteHeader(http.StatusNotImplemented)
 		//fmt.Fprint(w, "Only POST requests works for now.")
+		if len(registeredTracks) == 0 {
+			errorHandler(w, http.StatusNoContent, "No tracks registered yet.")
+			return
+		}
 		js, err := json.Marshal(registeredTrackIDs)
 		if err != nil {
 			str := fmt.Sprintf("Mershal error: %s", err)
