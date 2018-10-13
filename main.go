@@ -42,10 +42,6 @@ type IDdata struct {
 	TrackLength float64   `json:"track_length"` //<calculated total track length>
 }
 
-func uptime() time.Duration {
-	return time.Since(startTime)
-}
-
 func errorHandler(w http.ResponseWriter, code int, mes string) {
 	w.WriteHeader(code)
 	http.Error(w, http.StatusText(code), code)
@@ -53,23 +49,74 @@ func errorHandler(w http.ResponseWriter, code int, mes string) {
 	log.Print(mes)
 }
 
+//copied code from stackoverflow
+func diff(a, b time.Time) (year, month, day, hour, min, sec int) {
+	if a.Location() != b.Location() {
+		b = b.In(a.Location())
+	}
+	if a.After(b) {
+		a, b = b, a
+	}
+	y1, M1, d1 := a.Date()
+	y2, M2, d2 := b.Date()
+
+	h1, m1, s1 := a.Clock()
+	h2, m2, s2 := b.Clock()
+
+	year = int(y2 - y1)
+	month = int(M2 - M1)
+	day = int(d2 - d1)
+	hour = int(h2 - h1)
+	min = int(m2 - m1)
+	sec = int(s2 - s1)
+
+	// Normalize negative values
+	if sec < 0 {
+		sec += 60
+		min--
+	}
+	if min < 0 {
+		min += 60
+		hour--
+	}
+	if hour < 0 {
+		hour += 24
+		day--
+	}
+	if day < 0 {
+		// days in month:
+		t := time.Date(y1, M1, 32, 0, 0, 0, 0, time.UTC)
+		day += 32 - t.Day()
+		month--
+	}
+	if month < 0 {
+		month += 12
+		year--
+	}
+
+	return
+}
+
 func handl404(w http.ResponseWriter, r *http.Request) {
 	//sets header to 404
 	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprintf(w, "We found nothing exept this 404 and time: %s", uptime())
+	fmt.Fprintf(w, "We found nothing exept this 404")
 }
 
 func handlAPI(w http.ResponseWriter, r *http.Request) {
-	t := uptime()
-	ti := fmt.Sprintf("P%dY%dM%dDT%dH%dM%dS",
-		int(t.Seconds()/31556926),   //year
-		int(t.Seconds()/2629743)%12, //month
-		int(t.Seconds()/86400)%30,   //day
-		int(t.Seconds()/3600)%24,    //hour
-		int(t.Seconds()/60)%60,      //min
-		int(t.Seconds())%60)         //sec
 
-	serv := Service{ti, "Service for IGC tracks.", "v1"}
+	var tim time.Time
+	tim = time.Now()
+	y, mo, d, h, mi, s := diff(startTime, tim)
+	tim2 := fmt.Sprintf("P%dY%dM%dDT%dH%dM%dS",
+		y,  //year
+		mo, //month
+		d,  //day
+		h,  //hour
+		mi, //min
+		s)  //sec
+
+	serv := Service{tim2, "Service for IGC tracks.", "v1"}
 	js, err := json.Marshal(serv)
 	if err != nil {
 		str := fmt.Sprintf("Error Marshal: %s", err)
@@ -84,8 +131,6 @@ func handlAPIigc(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		//TODO:	Task 3
-		//w.WriteHeader(http.StatusNotImplemented)
-		//fmt.Fprint(w, "Only POST requests works for now.")
 		if len(registeredTracks) == 0 {
 			errorHandler(w, http.StatusNoContent, "No tracks registered yet.")
 			return
@@ -153,12 +198,16 @@ func handlAPIigcID(w http.ResponseWriter, r *http.Request) {
 	found := false
 	for i := 0; i < len(registeredTrackIDs); i++ {
 		if registeredTrackIDs[i] == vars["ID"] {
+			totalDistance := 0.0
+			for j := 0; j < len(registeredTracks[i].Points)-1; j++ {
+				totalDistance += registeredTracks[i].Points[j].Distance(registeredTracks[i].Points[j+1])
+			}
 			data := IDdata{
 				registeredTracks[i].Date,
 				registeredTracks[i].Pilot,
 				registeredTracks[i].GliderType,
 				registeredTracks[i].GliderID,
-				registeredTracks[i].Task.Distance(),
+				totalDistance,
 			}
 
 			js, err := json.Marshal(data)
@@ -229,13 +278,9 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", handl404)
 	r.HandleFunc("/igcinfo/api", handlAPI)
-	//	r.HandleFunc("/igcinfo/api/", handlAPI)
 	r.HandleFunc("/igcinfo/api/igc", handlAPIigc)
-	//	r.HandleFunc("/igcinfo/api/igc/", handlAPIigc)
 	r.HandleFunc("/igcinfo/api/igc/{ID}", handlAPIigcID)
-	//	r.HandleFunc("/igcinfo/api/igc/{ID}/", handlAPIigcID)
 	r.HandleFunc("/igcinfo/api/igc/{ID}/{field}", handlAPIigcIDfield)
-	//	r.HandleFunc("/igcinfo/api/igc/{ID}/{field}/", handlAPIigcIDfield)
 
 	http.Handle("/", r)
 	http.ListenAndServe(":"+port, nil)
