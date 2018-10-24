@@ -280,7 +280,7 @@ func handlAPIigcIDfield(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, registeredTracks[i].GliderType)
 			case "glider_id":
 				fmt.Fprint(w, registeredTracks[i].GliderID)
-			case "track_legth":
+			case "track_length":
 				fmt.Fprint(w, trackDistance(registeredTracks[i]))
 			case "H_date":
 				fmt.Fprint(w, registeredTracks[i].Date)
